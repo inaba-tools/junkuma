@@ -1,7 +1,6 @@
 name: junkuma
 on:
-  schedule:
-    - cron: "17 * * * *"
+  # 1時間ごとの起動は管理表のApps Script（kickGithub）から。GitHubの schedule が動かなかったため（2026/11/22）
   workflow_dispatch:
 concurrency:
   group: junkuma
