@@ -13,20 +13,37 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
+      - name: check
+        id: ok
+        env:
+          T: ${{ secrets.CORE_TOKEN }}
+          G: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -n "$T" ] && [ -n "$G" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; else echo "鍵の登録待ちのため休みます"; fi
       - uses: actions/checkout@v4
+        if: steps.ok.outputs.go == '1'
         with:
           repository: inaba-tools/junkuma-core
           token: ${{ secrets.CORE_TOKEN }}
       - uses: actions/setup-python@v5
+        if: steps.ok.outputs.go == '1'
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - run: bash .github/scripts/install_browser.sh
+      - if: steps.ok.outputs.go == '1'
+        run: pip install -r requirements.txt
+      - if: steps.ok.outputs.go == '1'
+        run: bash .github/scripts/install_browser.sh
         continue-on-error: true
       - name: run
+        if: steps.ok.outputs.go == '1'
         env:
           SHEET_API_URL: ${{ secrets.SHEET_API_URL }}
           SHEET_API_KEY: ${{ secrets.SHEET_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python junkuma.py > "$RUNNER_TEMP/out.log" 2>&1 || { echo "失敗（記録は非公開）"; exit 1; }
+          # 一時的な失敗は1回やり直す。2回続けて失敗したときだけ失敗にする
+          for i in 1 2; do
+            if python junkuma.py > "$RUNNER_TEMP/out.log" 2>&1; then exit 0; fi
+            [ $i = 1 ] && sleep 90
+          done
+          echo "失敗（記録は非公開）"; exit 1

@@ -164,7 +164,7 @@ function LGBar(nav,o){
 <div class="toast" id="toast"></div>
 <script>
 "use strict";
-const VERSION = "2026-11-22b";
+const VERSION = "2026-11-22c";
 const API_URL = "https://script.google.com/macros/s/AKfycbzLj1WVVsp_Y381rZHvkWM8RIqSIojozl7S2J0zHbDb8ioOI6-VDFV9UpNWZ6zSI-Pb/exec";
 const CLIENT_ID = "944595939498-b4ei4dlbcuap8v4o0ellepfj41m4j3j8.apps.googleusercontent.com";
 const VAPID = "BHtezYeb2IHihwwlphfDX6v8KM-cvxyr6_UBOEINt8t_DDfuC47Mz65hJ2t74aJCSSAVkMNb8_dkykCgJryvbZ8";
@@ -222,7 +222,7 @@ function groups(st) {   // 台帳：同じ組の台をまとめる
   u.forEach(x => { const k = x["組"] || x["ID"]; (g[k] = g[k] || []).push(x); });
   return Object.values(g);
 }
-function monthProfit() { const ym = nowYM(); return objs(D["売上"]).filter(r => String(r["売れた日"]).startsWith(ym)).reduce((a, r) => a + num(r["利益(円)"]), 0); }
+function monthProfit() { const ym = nowYM(); return objs(D["売上"]).filter(r => String(r["売れた日"]).startsWith(ym)).reduce((a, r) => a + num(r["利益(円)"]), 0) - objs(D["経費"]).filter(r => String(r["日付"]).startsWith(ym)).reduce((a, r) => a + num(r["金額(円)"]), 0); }
 function counts() {
   const c = {}; STAGES.forEach(s => c[s] = 0);
   c["候補"] = objs(D["候補"]).filter(p => p["ID1"] && !skipped(p)).length;
@@ -300,14 +300,14 @@ function sellSheet(k) {
 }
 function sellCalc(cost) {
   const v = num($("#sv").value), w = $("#sw").value, p = num($("#sp").value), fee = Math.round(v * FEE[w] / 100);
-  $("#sc").innerHTML = `<div class="dl"><span>手数料</span><b>${yen(fee)}</b></div><div class="dl"><span>送料（ゆうパケットポストmini）</span><b>${yen(SHIP)}</b></div><div class="dl"><span>仕入れ＋部品代</span><b>${yen(cost + p)}</b></div><div class="dl"><span>利益</span><b style="color:var(--acc)">${yen(v - fee - SHIP - cost - p)}</b></div>`;
+  $("#sc").innerHTML = `<div class="dl"><span>手数料</span><b>${yen(fee)}</b></div><div class="dl"><span>送料（ゆうパケットポストmini）</span><b>${yen(SHIP)}</b></div><div class="dl"><span>仕入れ</span><b>${yen(cost)}</b></div><div class="dl"><span>売上の利益</span><b style="color:var(--acc)">${yen(v - fee - SHIP - cost)}</b></div>${p ? `<div class="dl"><span>部品代（経費に記録）</span><b>${yen(-p)}</b></div><div class="dl"><span>手残り</span><b style="color:var(--acc)">${yen(v - fee - SHIP - cost - p)}</b></div>` : ""}`;
 }
 async function sellSave(k, cost) {
   const v = num($("#sv").value), w = $("#sw").value, p = num($("#sp").value); if (!v) return toast("売れた値段を入れてください");
   const fee = Math.round(v * FEE[w] / 100), L = objs(D["台帳"]).filter(x => (x["組"] || x["ID"]) === k && x["段階"] === "発送"), d = new Date();
   const ymd = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`, a = L[0] || {};
   try {
-    await call("tab_append", { name: "売上", rows: [[ymd, `${a["機種"] || ""} ${a["色"] || ""}`.trim(), `${a["タイトル"] || ""}`.slice(0, 40), w, v, fee, SHIP, cost + p, v - fee - SHIP - cost - p, L.length > 1 ? "2台で1台" : ""]] });
+    await call("tab_append", { name: "売上", rows: [[ymd, `${a["機種"] || ""} ${a["色"] || ""}`.trim(), `${a["タイトル"] || ""}`.slice(0, 40), w, v, fee, SHIP, cost, v - fee - SHIP - cost, (L.length > 1 ? "2台で1台。" : "") + (p ? `部品代${p}円は経費に記録` : "")]] });
     if (p) await call("tab_append", { name: "経費", rows: [[ymd, "修理部品", `${a["機種"] || ""}の部品`, p, ""]] });
     await setCells("台帳", L.map(u => [u._row, 2, "完了"])); shut(); toast("完了にしました"); await load(); pick("完了");
   } catch (e) { toast(e.message); }
