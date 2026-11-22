@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="ジャンクマ">
+<meta name="theme-color" content="#070908">
+<meta http-equiv="Cache-Control" content="no-cache">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>ジャンクマ</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#070908;--card:#141716;--line:#232A29;--text:#f2f2f2;--sub:#9a9d9b;--acc:#ffb13b;--accbg:#3a2a10;--red:#f19a92;--green:#7fd99a;--blue:#6db3f2}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--text);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.5}
+#app{position:fixed;inset:0;max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 84px);display:flex;flex-direction:column}
+h1{font-size:26px;font-weight:700;margin:0}
+.s{font-size:12px;color:var(--sub)}
+button{font:inherit;font-size:13px;font-weight:600;border:0;border-radius:999px;padding:9px 14px;background:var(--acc);color:#1a1205;cursor:pointer}
+button.sub{background:var(--card);color:var(--text);border:.5px solid var(--line)}
+button.red{background:none;color:var(--red);border:.5px solid var(--line)}
+button:disabled{opacity:.4}
+input,select{font:inherit;font-size:16px;width:100%;border:.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);color:var(--text)}
+.row{display:flex;align-items:center;gap:10px}.grow{flex:1;min-width:0}
+.head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px}
+.num{font-size:30px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1.1}
+.route{position:relative;display:flex;margin:2px -4px 8px;padding-bottom:6px;flex:none}
+.rline{position:absolute;left:8%;right:8%;top:17px;height:2px;background:var(--line)}
+.stop{flex:1;text-align:center;position:relative;z-index:1;background:none;color:var(--sub);padding:0;font-size:11px;border-radius:0}
+.dot{display:flex;align-items:center;justify-content:center;width:34px;height:34px;margin:0 auto 3px;border-radius:50%;background:var(--bg);border:2px solid var(--line);font-size:14px;font-weight:700;color:var(--text)}
+.stop.on{color:var(--acc)}.stop.on .dot{border-color:var(--acc);background:var(--accbg);color:var(--acc)}
+.list{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--card);border:.5px solid var(--line);border-radius:16px;padding:12px;flex:none}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 9px;background:var(--accbg);color:var(--acc)}
+.tag.b{background:#1f2f40;color:var(--blue)}
+.pr{font-size:22px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums}
+.imgs{display:flex;gap:6px;margin:8px 0}.imgs img{flex:1;min-width:0;height:96px;object-fit:cover;border-radius:10px;background:#000}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.more{background:none;color:var(--sub);border:.5px dashed var(--line);width:100%}
+.empty{text-align:center;color:var(--sub);padding:30px 0}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--text);color:#111;padding:9px 18px;border-radius:999px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}.toast.on{opacity:1}
+#sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,0);pointer-events:none;transition:background .25s}
+#sheet.on{background:rgba(0,0,0,.55);pointer-events:auto}
+#shb{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(env(safe-area-inset-bottom) + 20px);transform:translateY(100%);transition:transform .32s cubic-bezier(.22,.8,.24,1);max-width:560px;margin:0 auto}
+#sheet.on #shb{transform:none}
+.dl{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:.5px solid var(--line)}
+.sw{width:50px;height:30px;border-radius:999px;background:var(--line);position:relative;flex:none;padding:0}.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}.sw.on{background:var(--acc)}.sw.on::after{transform:translateX(20px)}
+.pane{flex:1;min-height:0;overflow:hidden}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="nav">
+  <a href="#home" data-t="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1z"/></svg>ホーム</a>
+  <a href="#money" data-t="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>売上</a>
+  <a href="#settings" data-t="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>設定</a>
+</nav>
+<!-- LGBAR:START 下のタブ：TimeTree風の液体ガラス（なぞるとレンズが出て、離した所を選ぶ） -->
+<style id="lgbar-css">
+nav.lg{position:fixed!important;left:16px!important;right:16px!important;top:auto!important;bottom:max(10px,calc(env(safe-area-inset-bottom) - 4px))!important;
+  height:60px!important;min-height:0!important;width:auto!important;max-width:520px;margin:0 auto!important;padding:0 4px!important;box-sizing:border-box!important;
+  display:flex!important;align-items:center!important;justify-content:space-around!important;gap:0!important;border-radius:999px!important;
+  background:rgba(40,40,43,.6)!important;-webkit-backdrop-filter:blur(22px) saturate(170%)!important;backdrop-filter:blur(22px) saturate(170%)!important;
+  border:0!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),inset 0 1px 0 rgba(255,255,255,.13),0 10px 30px rgba(0,0,0,.55)!important;
+  overflow:visible!important;transform:none!important;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  transition:transform .4s cubic-bezier(.3,1.5,.5,1)!important}
+nav.lg.hide{display:none!important}
+nav.lg::before,nav.lg::after{display:none!important}
+nav.lg.lg-drag{transform:scale(1.03)!important}
+nav.lg>.lg-it{position:relative;z-index:2;flex:1 1 0!important;width:auto!important;min-width:0;height:52px!important;margin:0!important;padding:0!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;
+  background:none!important;border:0!important;color:var(--lg-ink)!important;font-size:10.5px!important;font-weight:600!important;line-height:1.1!important;
+  white-space:nowrap;text-decoration:none!important;transform:none!important;transition:color .2s,opacity .12s!important;-webkit-tap-highlight-color:transparent;-webkit-user-drag:none}
+nav.lg>.lg-it svg{width:24px!important;height:24px!important;margin:0!important;animation:none!important}
+nav.lg>.lg-it.on{color:var(--lg-acc)!important}
+nav.lg.lg-drag>.lg-it.on{color:var(--lg-ink)!important}
+nav.lg.lg-drag>.lg-it.lg-hot{opacity:0}
+.lg-pill{position:absolute;z-index:1;left:0;top:4px;bottom:4px;border-radius:999px;pointer-events:none;background:var(--lg-pill);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.35),0 0 0 .5px rgba(255,255,255,.04);
+  transition:transform .5s cubic-bezier(.3,1.3,.45,1),width .5s cubic-bezier(.3,1.3,.45,1),opacity .25s}
+nav.lg.lg-drag .lg-pill{opacity:0!important}
+.lg-lens{position:absolute;z-index:3;left:0;top:50%;border-radius:999px;pointer-events:none;opacity:0;overflow:hidden;
+  transform:translate(var(--lx,0px),-50%) scale(var(--sx,1),var(--sy,1));
+  background:var(--lg-lens);-webkit-backdrop-filter:blur(16px) saturate(190%);backdrop-filter:blur(16px) saturate(190%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.24),inset 0 2px 3px rgba(255,255,255,.2),inset 0 -4px 8px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.45);
+  transition:opacity .16s}
+.lg-lens::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:inset 3px 0 4px -1px rgba(90,255,190,.28),inset -3px 0 4px -1px rgba(120,140,255,.3),inset 0 -3px 4px -2px rgba(255,120,200,.18)}
+.lg-lens.on{opacity:1}
+.lg-mag{position:absolute;left:0;top:0;pointer-events:none}
+.lg-mi{position:absolute;top:4px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--lg-ink);font-size:10.5px;font-weight:600;line-height:1.1;white-space:nowrap}
+.lg-mi svg{width:24px;height:24px;margin:0}
+.lg-mi.lg-hot{color:var(--lg-acc)}
+.lg-mi .badge,.lg-mi [class*=badge]{display:none!important}
+</style>
+<script>
+/* LGBar：nav＝下のタブ、sel＝項目、acc＝選択色。項目の選択状態は各アプリの「.on」をそのまま使う */
+function LGBar(nav,o){
+  if(!nav||nav.dataset.lg)return;nav.dataset.lg=1;
+  const its=()=>[...nav.querySelectorAll(o.sel)];
+  nav.classList.add('lg');its().forEach(e=>{e.classList.add('lg-it');e.draggable=false;e.querySelectorAll('svg,img').forEach(x=>x.setAttribute('draggable','false'))});
+  nav.style.setProperty('--lg-acc',o.acc);
+  const theme=()=>{const L=o.light&&o.light();nav.style.setProperty('--lg-ink',L?'#1d1d1f':'#F2F2F2');nav.style.setProperty('--lg-pill',L?'rgba(0,0,0,.08)':'rgba(0,0,0,.42)');
+    nav.style.setProperty('--lg-lens',L?'rgba(255,255,255,.78)':'rgba(46,46,50,.82)');
+    if(L){nav.style.setProperty('background','rgba(255,255,255,.62)','important');nav.style.setProperty('box-shadow','inset 0 0 0 1px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.8),0 8px 26px rgba(0,0,0,.14)','important')}
+    else{nav.style.removeProperty('background');nav.style.removeProperty('box-shadow')}};
+  theme();if(o.light&&!LGBar.mq){LGBar.mq=1;matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>LGBar.th&&LGBar.th())}LGBar.th=theme;
+  const pill=document.createElement('div');pill.className='lg-pill';nav.prepend(pill);
+  const lens=document.createElement('div');lens.className='lg-lens';const mag=document.createElement('div');mag.className='lg-mag';lens.appendChild(mag);nav.appendChild(lens);
+  const isOn=o.on||(e=>e.classList.contains('on'));const act=()=>its().find(isOn);
+  function place(anim){const e=act();if(!e||!nav.offsetWidth){pill.style.opacity=0;return}
+    const r=e.getBoundingClientRect(),n=nav.getBoundingClientRect(),w=Math.min(r.width-2,r.width*.98);
+    if(!anim)pill.style.transition='none';pill.style.opacity=1;pill.style.width=w+'px';pill.style.transform=`translateX(${r.left-n.left+(r.width-w)/2}px)`;LGBar.last={w:pill.style.width,t:pill.style.transform};
+    if(!anim){pill.offsetWidth;pill.style.transition=''}}
+  const mo=new MutationObserver(()=>{if(!drag)place(true)});its().forEach(e=>mo.observe(e,{attributes:true,attributeFilter:['class','aria-current']}));
+  if(LGBar.ro)LGBar.ro.disconnect();if(LGBar.mo)LGBar.mo.disconnect();LGBar.mo=mo;LGBar.ro=new ResizeObserver(()=>place(false));LGBar.ro.observe(nav);
+  let st=null,drag=false,cx=0,tx=0,vx=0,raf=0,hide=0,prog=false,eat=0,geo=null;
+  const near=x=>{let b=null,d=1e9;its().forEach(e=>{const r=e.getBoundingClientRect(),k=Math.abs(r.left+r.width/2-x);if(k<d){d=k;b=e}});return b};
+  function build(){const n=nav.getBoundingClientRect();mag.innerHTML='';
+    its().forEach(e=>{const r=e.getBoundingClientRect(),c=document.createElement('div');c.className='lg-mi';c.innerHTML=e.innerHTML;
+      c.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));c.style.left=(r.left-n.left)+'px';c.style.width=r.width+'px';c.dataset.k=its().indexOf(e);mag.appendChild(c)});
+    const iw=n.width/its().length;geo={n,w:Math.min(iw*1.22,118),h:n.height+14}}
+  function draw(){const {n,w,h}=geo;const x=Math.max(n.left+w/2-8,Math.min(n.right-w/2+8,cx)),lx=x-n.left-w/2;
+    const s=Math.min(Math.abs(vx)*.012,.16);
+    lens.style.width=w+'px';lens.style.height=h+'px';lens.style.setProperty('--lx',lx+'px');lens.style.setProperty('--sx',1+s);lens.style.setProperty('--sy',1-s*.6);
+    mag.style.width=n.width+'px';mag.style.height=n.height+'px';mag.style.left=(-lx)+'px';mag.style.top=((h-n.height)/2)+'px';
+    mag.style.transformOrigin=(x-n.left)+'px 50%';mag.style.transform='scale(1.2)';
+    const hot=near(x),hi=its().indexOf(hot);its().forEach(e=>e.classList.toggle('lg-hot',e===hot));[...mag.children].forEach(c=>c.classList.toggle('lg-hot',+c.dataset.k===hi))}
+  function loop(){const p=cx;cx+=(tx-cx)*(drag?.78:.34);vx=cx-p;draw();if(drag||Math.abs(tx-cx)>.3||Math.abs(vx)>.05)raf=requestAnimationFrame(loop);else raf=0}
+  function show(x,from){clearTimeout(hide);build();cx=from??x;tx=x;vx=0;lens.style.transition='none';lens.style.setProperty('--sx',.8);lens.style.setProperty('--sy',.8);draw();
+    lens.offsetWidth;lens.style.transition='opacity .16s,transform .22s cubic-bezier(.3,1.6,.5,1)';lens.classList.add('on');if(!raf)raf=requestAnimationFrame(loop)}
+  function done(e){tx=cx=e.getBoundingClientRect().left+e.getBoundingClientRect().width/2;vx=0;draw();
+    hide=setTimeout(()=>{lens.style.transition='opacity .22s,transform .28s ease-in';lens.style.setProperty('--sx',.7);lens.style.setProperty('--sy',.62);lens.classList.remove('on');
+      setTimeout(()=>its().forEach(x=>x.classList.remove('lg-hot')),120)},drag?60:140)}
+  function pick(e){if(drag||st===null){const r=e.getBoundingClientRect(),n=nav.getBoundingClientRect(),w=r.width*.98;LGBar.last={w:w+'px',t:`translateX(${r.left-n.left+(r.width-w)/2}px)`}}prog=true;try{(o.pick||(x=>x.click()))(e)}finally{prog=false}}
+  nav.addEventListener('click',ev=>{if(!prog&&performance.now()<eat){ev.preventDefault();ev.stopImmediatePropagation()}},true);
+  nav.addEventListener('pointerdown',ev=>{if(ev.button)return;const e=ev.target.closest('.lg-it');if(!e)return;st={x:ev.clientX,y:ev.clientY,e,from:(act()||e).getBoundingClientRect()};drag=false},{passive:true});
+  const move=ev=>{if(!st)return;const dx=ev.clientX-st.x;
+    if(!drag&&Math.abs(dx)>4){drag=true;nav.classList.add('lg-drag');const f=st.from;show(ev.clientX,f.left+f.width/2)}
+    if(drag){tx=ev.clientX;if(!raf)raf=requestAnimationFrame(loop)}};
+  const up=ev=>{if(!st)return;const s=st;st=null;
+    if(drag){const e=near(tx);eat=performance.now()+500;nav.classList.remove('lg-drag');done(e);drag=false;pick(e)}
+    else if(ev.type==='pointerup'){show(s.e.getBoundingClientRect().left+s.e.getBoundingClientRect().width/2);done(s.e)}};
+  LGBar.h={move,up,rs:()=>place(false)};
+  if(!LGBar.bound){LGBar.bound=1;addEventListener('pointermove',e=>LGBar.h.move(e),{passive:true});addEventListener('pointerup',e=>LGBar.h.up(e),{passive:true});
+    addEventListener('pointercancel',e=>LGBar.h.up(e),{passive:true});addEventListener('resize',()=>LGBar.h.rs())}
+  if(o.memo&&LGBar.last){pill.style.transition='none';pill.style.opacity=1;pill.style.width=LGBar.last.w;pill.style.transform=LGBar.last.t;pill.offsetWidth;pill.style.transition='';requestAnimationFrame(()=>place(true))}
+  else requestAnimationFrame(()=>place(false));
+  return{sync:()=>place(true)};
+}
+</script>
+<!-- LGBAR:END -->
+
+<script>LGBar(document.getElementById('nav'),{sel:'a',acc:'var(--acc)'})</script>
+<div id="sheet" onclick="if(event.target===this)shut()"><div id="shb"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+const VERSION = "2026-11-22a";
+const API_URL = "__API_URL__";
+const CLIENT_ID = "944595939498-b4ei4dlbcuap8v4o0ellepfj41m4j3j8.apps.googleusercontent.com";
+const VAPID = "BHtezYeb2IHihwwlphfDX6v8KM-cvxyr6_UBOEINt8t_DDfuC47Mz65hJ2t74aJCSSAVkMNb8_dkykCgJryvbZ8";
+const FEE = { "メルカリ": 10, "Yahoo!フリマ": 5 }, SHIP = 160;
+const $ = s => document.querySelector(s);
+const ss = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} } };
+const yen = n => (n < 0 ? "−" : "") + "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
+const num = v => { const n = parseFloat(String(v).replace(/[,¥円]/g, "")); return isNaN(n) ? 0 : n; };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 2400); }
+function sheet(h) { $("#shb").innerHTML = h; $("#sheet").classList.add("on"); }
+function shut() { $("#sheet").classList.remove("on"); }
+
+async function post(b) { return (await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(b) })).json(); }
+async function call(action, payload = {}) {
+  const d = await post({ action, payload, session: ss.get("session") });
+  if (d.login) { ss.set("session", null); location.hash = "settings"; throw new Error("ログインしてください（設定タブ）"); }
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+async function onGoogle(res) {
+  try { const d = await post({ action: "login", idToken: res.credential }); if (d.error) throw new Error(d.error);
+    ss.set("session", d.session); toast("ログインしました"); location.hash = "home"; load(); } catch (e) { toast(e.message); }
+}
+let gInit = false;
+function googleButton(id) {
+  const t = () => { if (!(window.google && google.accounts && google.accounts.id)) return setTimeout(t, 300);
+    const el = document.getElementById(id); if (!el || el.dataset.done) return;
+    if (!gInit) { google.accounts.id.initialize({ client_id: CLIENT_ID, callback: onGoogle, ux_mode: "popup" }); gInit = true; }
+    el.dataset.done = "1"; google.accounts.id.renderButton(el, { theme: "outline", size: "large", shape: "pill", text: "signin_with", locale: "ja", width: 260 }); };
+  t();
+}
+
+// ---- データ（前回の分をすぐ出して、裏で最新にする）
+const D = {};
+const objs = v => { if (!v || !v.length) return []; const h = v[0]; return v.slice(1).map((r, i) => { const o = { _row: i + 2 }; h.forEach((k, j) => o[k] = r[j] == null ? "" : r[j]); return o; }); };
+async function load() {
+  if (!ss.get("session")) return render();
+  try { const d = await call("tabs_get", { list: ["候補", "台帳", "売上", "経費", "通知"].map(name => ({ name })) });
+    for (const k in d.tabs) if (d.tabs[k].values) { D[k] = d.tabs[k].values; ss.set("c:" + k, JSON.stringify(d.tabs[k].values)); }
+  } catch (e) { toast(e.message); }
+  render();
+}
+["候補", "台帳", "売上", "経費", "通知"].forEach(k => { try { const x = ss.get("c:" + k); if (x) D[k] = JSON.parse(x); } catch (e) {} });
+async function setCells(name, cells) { await call("tab_set", { name, cells }); const v = D[name] || []; cells.forEach(([r, c, val]) => { while (v.length < r) v.push([]); while (v[r - 1].length < c) v[r - 1].push(""); v[r - 1][c - 1] = val; }); D[name] = v; ss.set("c:" + name, JSON.stringify(v)); }
+async function append(name, rows) { await call("tab_append", { name, rows }); await load(); }
+
+// ---- ホーム（路線図：候補→届いた→修理→出品中→発送→完了）
+const STAGES = ["候補", "届いた", "修理", "出品中", "発送", "完了"];
+const NEXT = { "届いた": ["修理を始める", "修理"], "修理": ["直った・出品した", "出品中"], "出品中": ["売れた", "発送"], "発送": ["発送した（完了）", "完了"] };
+let stage = ss.get("stage") || "候補", expand = false;
+const nowYM = () => { const d = new Date(); return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}`; };
+function groups(st) {   // 台帳：同じ組の台をまとめる
+  const u = objs(D["台帳"]).filter(x => x["段階"] === st && x["ID"]), g = {};
+  u.forEach(x => { const k = x["組"] || x["ID"]; (g[k] = g[k] || []).push(x); });
+  return Object.values(g);
+}
+function monthProfit() { const ym = nowYM(); return objs(D["売上"]).filter(r => String(r["売れた日"]).startsWith(ym)).reduce((a, r) => a + num(r["利益(円)"]), 0); }
+function counts() {
+  const c = {}; STAGES.forEach(s => c[s] = 0);
+  c["候補"] = objs(D["候補"]).filter(p => p["ID1"] && !skipped(p)).length;
+  STAGES.slice(1, 5).forEach(s => c[s] = groups(s).length);
+  const ym = nowYM(); c["完了"] = objs(D["売上"]).filter(r => String(r["売れた日"]).startsWith(ym)).length;
+  return c;
+}
+function skipped(p) { const l = objs(D["台帳"]); return [p["ID1"], p["ID2"]].filter(Boolean).some(id => { const u = l.find(x => x["ID"] === id); return u && u["段階"] !== "候補"; }); }
+function openBtn(src, url) { return `<a href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none"><button class="sub">${esc(src)}で開く</button></a>`; }
+function planCard(p) {
+  const two = !!p["ID2"], tg = two ? "b" : "";
+  const img = [p["写真1"], p["写真2"]].filter(Boolean).map(s => `<img src="${esc(s)}" loading="lazy" referrerpolicy="no-referrer">`).join("");
+  const price = (a, b) => b ? `${yen(num(a))}→${yen(num(b.replace(/[^\d]/g, "")))}（要交渉）` : yen(num(a));
+  return `<div class="card"><div class="row"><span class="tag ${tg}">${esc(p["提案"])}</span><span class="grow"></span><div class="s">手残りの見込み</div><div class="pr">${yen(num(p["手残り"]))}</div></div>
+    ${img ? `<div class="imgs">${img}</div>` : ""}
+    <div><b>${esc(p["機種"])} ${esc(p["色"])}</b> <span class="s">→ ${esc(p["売り先"])}で約${yen(num(p["売値"]))}</span></div>
+    <div class="s">今の値段→買う上限：${price(p["値段1"], p["上限1"])}${two ? "＋" + price(p["値段2"], p["上限2"]) : ""}</div>
+    <div class="s">直す所：${esc(p["直す所"])}${num(p["部品代"]) ? `（部品代 ${yen(num(p["部品代"]))}）` : ""}</div>
+    <div class="btns">${openBtn(p["出品元1"], p["ID1"])}${two ? openBtn(p["出品元2"], p["ID2"]) : ""}<button onclick="bought('${esc(p["組"])}')">買った</button><button class="red" onclick="skip('${esc(p["組"])}')">見送る</button></div></div>`;
+}
+function stageCard(g, st) {
+  const a = g[0], cost = g.reduce((s, x) => s + num(x["購入値"]), 0), nx = NEXT[st];
+  return `<div class="card"><div class="row"><div class="grow"><b>${esc(a["機種"])} ${esc(a["色"])}</b>${g.length > 1 ? ` <span class="tag b">2台で1台</span>` : ""}<div class="s">仕入れ ${yen(cost)}／${g.map(x => esc(x["出品元"])).join("・")}</div></div>
+    ${nx ? `<button onclick="advance('${esc(a["組"] || a["ID"])}','${st}')">${nx[0]}</button>` : ""}</div></div>`;
+}
+function homeHTML() {
+  const c = counts(), tp = monthProfit();
+  const route = `<div class="route"><div class="rline"></div>${STAGES.map(s => `<button class="stop ${s === stage ? "on" : ""}" onclick="pick('${s}')"><div class="dot">${c[s]}</div>${s}</button>`).join("")}</div>`;
+  let cards = [];
+  if (stage === "候補") cards = objs(D["候補"]).filter(p => p["ID1"] && !skipped(p)).map(planCard);
+  else if (stage === "完了") cards = objs(D["売上"]).filter(r => String(r["売れた日"]).startsWith(nowYM())).reverse().map(r => `<div class="card"><div class="row"><div class="grow"><b>${esc(r["機種"])}</b><div class="s">${esc(r["売れた日"])}・${esc(r["売った場所"])}・売値 ${yen(num(r["売値(円)"]))}</div></div><div class="pr">${yen(num(r["利益(円)"]))}</div></div></div>`);
+  else cards = groups(stage).map(g => stageCard(g, stage));
+  const show = expand ? cards : cards.slice(0, 3);
+  const body = cards.length ? show.join("") + (cards.length > 3 && !expand ? `<button class="more" onclick="expand=true;render()">ほか${cards.length - 3}件を見る</button>` : "") : `<div class="empty">${stage === "候補" ? "いまの候補はありません。<br>次の検索で見つかるとここに出ます。" : "ありません"}</div>`;
+  return `<div class="head"><div><h1>ジャンクマ</h1><div class="s">今月の利益</div></div><div class="num" style="color:${tp < 0 ? "var(--red)" : "var(--acc)"}">${yen(tp)}</div></div>${route}<div class="list" style="${expand ? "overflow-y:auto" : ""}">${body}</div>`;
+}
+function pick(s) { stage = s; expand = false; ss.set("stage", s); render(); }
+// 左右スワイプで段を切り替え
+let sx = null, sy = null;
+addEventListener("touchstart", e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+addEventListener("touchend", e => { if (sx == null || (location.hash || "#home") !== "#home" || e.target.closest("nav,#sheet")) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) { const i = STAGES.indexOf(stage) + (dx < 0 ? 1 : -1); if (i >= 0 && i < STAGES.length) pick(STAGES[i]); } }, { passive: true });
+
+async function bought(k) {   // 候補の組を「買った」にする（届くのを待つ）
+  const p = objs(D["候補"]).find(x => x["組"] === k); if (!p) return;
+  const key = "P" + Date.now().toString(36), L = objs(D["台帳"]), cells = [];
+  [[p["ID1"], p["上限1"], p["値段1"]], [p["ID2"], p["上限2"], p["値段2"]]].forEach(([id, cap, pr]) => {
+    const u = L.find(x => x["ID"] === id); if (!id || !u) return;
+    const m = String(cap || "").match(/([\d,]+)円/), buy = m ? num(m[1]) : num(pr);
+    cells.push([u._row, 2, "届いた"], [u._row, 15, key], [u._row, 17, buy]);
+  });
+  try { await setCells("台帳", cells); toast("買ったに移しました（購入はご自身で）"); pick("届いた"); } catch (e) { toast(e.message); }
+}
+async function skip(k) {
+  const p = objs(D["候補"]).find(x => x["組"] === k); if (!p) return;
+  const L = objs(D["台帳"]), cells = [];
+  [p["ID1"], p["ID2"]].forEach(id => { const u = L.find(x => x["ID"] === id); if (id && u) cells.push([u._row, 2, "見送り"]); });
+  try { await setCells("台帳", cells); toast("見送りました。次から出しません"); render(); } catch (e) { toast(e.message); }
+}
+async function advance(k, st) {
+  const L = objs(D["台帳"]).filter(x => (x["組"] || x["ID"]) === k && x["段階"] === st), nx = NEXT[st][1];
+  if (nx === "完了") return sellSheet(k);
+  try { await setCells("台帳", L.map(u => [u._row, 2, nx])); toast(`${nx}に進めました`); pick(nx); } catch (e) { toast(e.message); }
+}
+function sellSheet(k) {
+  const L = objs(D["台帳"]).filter(x => (x["組"] || x["ID"]) === k && x["段階"] === "発送");
+  const cost = L.reduce((s, x) => s + num(x["購入値"]), 0);
+  sheet(`<div class="row" style="margin-bottom:10px"><b class="grow" style="font-size:18px">売れた値段を記録</b><button class="sub" onclick="shut()">閉じる</button></div>
+   <div class="s">${esc(L[0] ? L[0]["機種"] + " " + L[0]["色"] : "")}（仕入れ ${yen(cost)}）</div>
+   <div style="margin:10px 0 4px" class="s">売れた値段（円）</div><input id="sv" type="number" inputmode="numeric" oninput="sellCalc(${cost})">
+   <div style="margin:10px 0 4px" class="s">売った場所</div><select id="sw" onchange="sellCalc(${cost})"><option>Yahoo!フリマ</option><option>メルカリ</option></select>
+   <div style="margin:10px 0 4px" class="s">今回かけた部品代（円・なければ空）</div><input id="sp" type="number" inputmode="numeric" oninput="sellCalc(${cost})">
+   <div id="sc" style="margin:12px 0"></div><button style="width:100%;height:46px" onclick="sellSave('${esc(k)}',${cost})">記録して完了にする</button>`);
+}
+function sellCalc(cost) {
+  const v = num($("#sv").value), w = $("#sw").value, p = num($("#sp").value), fee = Math.round(v * FEE[w] / 100);
+  $("#sc").innerHTML = `<div class="dl"><span>手数料</span><b>${yen(fee)}</b></div><div class="dl"><span>送料（ゆうパケットポストmini）</span><b>${yen(SHIP)}</b></div><div class="dl"><span>仕入れ＋部品代</span><b>${yen(cost + p)}</b></div><div class="dl"><span>利益</span><b style="color:var(--acc)">${yen(v - fee - SHIP - cost - p)}</b></div>`;
+}
+async function sellSave(k, cost) {
+  const v = num($("#sv").value), w = $("#sw").value, p = num($("#sp").value); if (!v) return toast("売れた値段を入れてください");
+  const fee = Math.round(v * FEE[w] / 100), L = objs(D["台帳"]).filter(x => (x["組"] || x["ID"]) === k && x["段階"] === "発送"), d = new Date();
+  const ymd = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`, a = L[0] || {};
+  try {
+    await call("tab_append", { name: "売上", rows: [[ymd, `${a["機種"] || ""} ${a["色"] || ""}`.trim(), `${a["タイトル"] || ""}`.slice(0, 40), w, v, fee, SHIP, cost + p, v - fee - SHIP - cost - p, L.length > 1 ? "2台で1台" : ""]] });
+    if (p) await call("tab_append", { name: "経費", rows: [[ymd, "修理部品", `${a["機種"] || ""}の部品`, p, ""]] });
+    await setCells("台帳", L.map(u => [u._row, 2, "完了"])); shut(); toast("完了にしました"); await load(); pick("完了");
+  } catch (e) { toast(e.message); }
+}
+
+// ---- 売上
+function moneyHTML() {
+  const ym = nowYM(), S = objs(D["売上"]).filter(r => String(r["売れた日"]).startsWith(ym)), E = objs(D["経費"]).filter(r => String(r["日付"]).startsWith(ym));
+  const pf = S.reduce((a, r) => a + num(r["利益(円)"]), 0), ex = E.reduce((a, r) => a + num(r["金額(円)"]), 0);
+  const rows = objs(D["売上"]).slice().reverse().slice(0, 8).map(r => `<div class="dl"><span>${esc(r["売れた日"]).slice(5)} ${esc(r["機種"])}</span><b>${yen(num(r["利益(円)"]))}</b></div>`).join("");
+  return `<div class="head"><div><h1>売上</h1><div class="s">${ym.replace("/", "年")}月</div></div></div>
+   <div class="card"><div class="row"><div class="grow s">売上の利益（${S.length}件）</div><div class="pr">${yen(pf)}</div></div><div class="row"><div class="grow s">経費（${E.length}件）</div><b>${yen(-ex)}</b></div><div class="row" style="margin-top:6px"><div class="grow">本当の利益</div><div class="pr">${yen(pf - ex)}</div></div></div>
+   <div class="card" style="overflow:hidden">${rows || '<div class="empty">まだありません</div>'}</div>`;
+}
+
+// ---- 設定（ログイン・通知）
+let bell = false;
+function settingsHTML() {
+  const on = ss.get("session"), nv = D["通知"] || [], kind = String((nv[1] || [])[1] || "").toUpperCase() !== "FALSE";
+  return `<div class="head"><h1>設定</h1></div>
+   <div class="card"><b>ログイン</b><div class="s" style="margin:4px 0 10px">${on ? "ログイン中です。" : "持ち主のGoogleアカウントでログインしてください。"}</div>${on ? `<button class="sub" onclick="logout()">ログアウト</button>` : `<div id="gbtn"></div>`}</div>
+   <div class="card"><div class="row"><div class="grow"><b>ジャンク候補の通知</b><div class="s">新しい候補が見つかったらお知らせします</div></div><button class="sw ${kind ? "on" : ""}" onclick="setKind(this)"></button></div>
+    <div class="btns">${bell ? `<button class="sub" onclick="bellOff()">この端末はオフ</button>` : `<button onclick="bellOn()">この端末で通知を受け取る</button>`}</div>
+    <div class="s" style="margin-top:8px">ホーム画面に追加したジャンクマから押してください。</div></div>`;
+}
+async function setKind(b) { const o = !b.classList.contains("on"); b.classList.toggle("on", o); try { await setCells("通知", [[2, 2, o]]); } catch (e) { b.classList.toggle("on", !o); toast(e.message); } }
+async function logout() { try { await post({ action: "logout", session: ss.get("session") }); } catch (e) {} ss.set("session", null); toast("ログアウトしました"); render(); }
+const b64u = s => { const p = "=".repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
+let swReg = null;
+async function mySub() { try { const r = swReg || await navigator.serviceWorker.getRegistration(); return r && await r.pushManager.getSubscription(); } catch (e) { return null; } }
+async function bellOn() {
+  const sa = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  if (!("PushManager" in window) || !sa) return toast("ホーム画面に追加したジャンクマから押してください");
+  try {
+    if (await Notification.requestPermission() !== "granted") return toast("通知が許可されませんでした");
+    const r = swReg || await navigator.serviceWorker.ready; let sub = await r.pushManager.getSubscription();
+    if (!sub) sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID) });
+    const v = (await call("tab_get", { name: "通知" })).values || [], json = JSON.stringify(sub.toJSON());
+    let n = v.findIndex((x, i) => i >= 9 && String(x[2] || "").includes(sub.endpoint)) + 1;
+    if (n < 10) { n = v.findIndex((x, i) => i >= 9 && !String(x[2] || "").trim()) + 1; if (n < 10) n = Math.max(10, v.length + 1); }
+    const d = new Date(), dev = /iPad/.test(navigator.userAgent) ? "iPad" : /iPhone/.test(navigator.userAgent) ? "iPhone" : "その他";
+    await setCells("通知", [[n, 1, `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`], [n, 2, dev], [n, 3, json]]);
+    bell = true; toast("通知がつながりました"); render();
+  } catch (e) { toast("通知の登録に失敗しました"); }
+}
+async function bellOff() {
+  try { const sub = await mySub(); if (sub) { const v = (await call("tab_get", { name: "通知" })).values || [], n = v.findIndex((x, i) => i >= 9 && String(x[2] || "").includes(sub.endpoint)) + 1;
+    if (n >= 10) await setCells("通知", [[n, 1, ""], [n, 2, ""], [n, 3, ""]]); await sub.unsubscribe(); }
+    bell = false; toast("この端末の通知をオフにしました"); render(); } catch (e) { toast("オフにできませんでした"); }
+}
+
+function render() {
+  const t = (location.hash || "#home").slice(1), el = $("#app");
+  document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.dataset.t === t));
+  if (LGBar.sync) try { LGBar.sync(); } catch (e) {}
+  el.innerHTML = !ss.get("session") && t !== "settings" ? `<div class="head"><h1>ジャンクマ</h1></div><div class="empty">設定タブからログインしてください。</div>` : t === "money" ? moneyHTML() : t === "settings" ? settingsHTML() : homeHTML();
+  if (t === "settings" && !ss.get("session")) googleButton("gbtn");
+}
+addEventListener("hashchange", render);
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(r => { swReg = r; mySub().then(s => { bell = !!s; }); }).catch(() => {});
+async function checkVersion() { try { const v = (await (await fetch("version.txt?t=" + Date.now(), { cache: "no-store" })).text()).trim(); if (v && v !== VERSION) location.reload(); } catch (e) {} }
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { checkVersion(); load(); } });
+checkVersion(); render(); load(); setInterval(() => { if (!document.hidden) load(); }, 60000);
+</script>
+</body>
+</html>

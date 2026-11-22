@@ -1,0 +1,32 @@
+name: junkuma
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: junkuma
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: inaba-tools/junkuma-core
+          token: ${{ secrets.CORE_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: bash .github/scripts/install_browser.sh
+        continue-on-error: true
+      - name: run
+        env:
+          SHEET_API_URL: ${{ secrets.SHEET_API_URL }}
+          SHEET_API_KEY: ${{ secrets.SHEET_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python junkuma.py > "$RUNNER_TEMP/out.log" 2>&1 || { echo "失敗（記録は非公開）"; exit 1; }
